@@ -5,7 +5,7 @@
 #include "include/cppgc/platform.h"
 #include "src/base/page-allocator.h"
 #include "test/unittests/heap/cppgc/test-platform.h"
-#include <gmock/gmock.h>
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 

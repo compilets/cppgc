@@ -9,7 +9,7 @@
 #include "src/base/platform/mutex.h"
 #include "src/base/platform/platform.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {

@@ -86,10 +86,10 @@ void* OS::RemapShared(void* old_address, void* new_address, size_t size) {
   return result;
 }
 
-std::vector<OS::MemoryRange> OS::GetFreeMemoryRangesWithin(
+std::optional<OS::MemoryRange> OS::GetFirstFreeMemoryRangeWithin(
     OS::Address boundary_start, OS::Address boundary_end, size_t minimum_size,
     size_t alignment) {
-  std::vector<OS::MemoryRange> result = {};
+  std::optional<OS::MemoryRange> result;
   // This function assumes that the layout of the file is as follows:
   // hex_start_addr-hex_end_addr rwxp <unused data> [binary_file_name]
   // and the lines are arranged in increasing order of address.
@@ -119,7 +119,8 @@ std::vector<OS::MemoryRange> OS::GetFreeMemoryRangesWithin(
           RoundDown(std::min(gap_end, boundary_end), alignment);
       if (overlap_start < overlap_end &&
           overlap_end - overlap_start >= minimum_size) {
-        result.push_back({overlap_start, overlap_end});
+        result = {overlap_start, overlap_end};
+        break;
       }
     }
     // Continue to visit the next gap.
@@ -140,7 +141,7 @@ std::vector<OS::MemoryRange> OS::GetFreeMemoryRangesWithin(
 //  static
 base::Optional<MemoryRegion> MemoryRegion::FromMapsLine(const char* line) {
   MemoryRegion region;
-  uint8_t dev_major = 0, dev_minor = 0;
+  unsigned dev_major = 0, dev_minor = 0;
   uintptr_t inode = 0;
   int path_index = 0;
   uintptr_t offset = 0;
@@ -153,7 +154,7 @@ base::Optional<MemoryRegion> MemoryRegion::FromMapsLine(const char* line) {
   // Refer to man 3 sscanf for details.
   if (sscanf(line,
              "%" V8PRIxPTR "-%" V8PRIxPTR " %4c %" V8PRIxPTR
-             " %hhx:%hhx %" V8PRIdPTR " %n",
+             " %x:%x %" V8PRIdPTR " %n",
              &region.start, &region.end, region.permissions, &offset,
              &dev_major, &dev_minor, &inode, &path_index) < 7) {
     return base::nullopt;
@@ -218,7 +219,7 @@ std::unique_ptr<std::vector<MemoryRegion>> ParseProcSelfMaps(
   }
 
   fclose(fp);
-  if (!error && result->size()) return result;
+  if (!error && !result->empty()) return result;
 
   return nullptr;
 }

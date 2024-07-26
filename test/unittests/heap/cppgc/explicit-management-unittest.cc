@@ -12,7 +12,7 @@
 #include "src/heap/cppgc/page-memory.h"
 #include "src/heap/cppgc/sweeper.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {

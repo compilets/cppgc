@@ -9,7 +9,7 @@
 
 #include "src/base/address-region.h"
 #include "src/base/utils/random-number-generator.h"
-#include <gtest/gtest_prod.h>
+#include "testing/gtest/include/gtest/gtest_prod.h"  // nogncheck
 
 namespace v8 {
 namespace base {
@@ -124,7 +124,7 @@ class V8_BASE_EXPORT RegionAllocator final {
     return whole_region_.contains(address, size);
   }
 
-  // Total size of not yet aquired regions.
+  // Total size of not yet acquired regions.
   size_t free_size() const { return free_size_; }
 
   // The alignment of the allocated region's addresses and granularity of

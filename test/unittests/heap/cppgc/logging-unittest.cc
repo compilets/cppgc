@@ -7,8 +7,8 @@
 #include <string>
 
 #include "include/cppgc/source-location.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
@@ -50,7 +50,7 @@ TEST(LoggingTest, ConstexprContext) {
 }
 #endif
 
-#if DEBUG && !defined(OFFICIAL_BUILD)
+#if DEBUG && !defined(OFFICIAL_BUILD) && GTEST_HAS_DEATH_TEST
 TEST(LoggingTest, Message) {
   using ::testing::ContainsRegex;
   EXPECT_DEATH_IF_SUPPORTED(CPPGC_DCHECK(5 == 7),
@@ -59,7 +59,7 @@ TEST(LoggingTest, Message) {
                             ContainsRegex("failed.*5 == 7"));
 }
 
-#if CPPGC_SUPPORTS_SOURCE_LOCATION
+#if V8_SUPPORTS_SOURCE_LOCATION
 TEST(LoggingTest, SourceLocation) {
   using ::testing::AllOf;
   using ::testing::HasSubstr;
@@ -69,7 +69,7 @@ TEST(LoggingTest, SourceLocation) {
   EXPECT_DEATH_IF_SUPPORTED(CPPGC_CHECK(false), AllOf(HasSubstr(loc.FileName()), HasSubstr(std::to_string(loc.Line() + 2)))); // NOLINT(whitespace/line_length)
   // clang-format on
 }
-#endif  // CPPGC_SUPPORTS_SOURCE_LOCATION
+#endif  // V8_SUPPORTS_SOURCE_LOCATION
 
 #endif  // DEBUG
 

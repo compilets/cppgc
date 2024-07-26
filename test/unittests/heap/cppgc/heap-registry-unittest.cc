@@ -9,7 +9,7 @@
 #include "src/heap/cppgc/heap-base.h"
 #include "src/heap/cppgc/process-heap.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {

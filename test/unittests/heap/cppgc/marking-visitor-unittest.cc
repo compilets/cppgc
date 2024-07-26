@@ -13,7 +13,7 @@
 #include "src/heap/cppgc/marker.h"
 #include "src/heap/cppgc/marking-state.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {

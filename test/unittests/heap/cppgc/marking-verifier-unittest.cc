@@ -11,7 +11,7 @@
 #include "src/heap/cppgc/heap-object-header.h"
 #include "src/heap/cppgc/heap.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
@@ -23,9 +23,11 @@ class MarkingVerifierTest : public testing::TestWithHeap {
   V8_NOINLINE void VerifyMarking(HeapBase& heap, StackState stack_state,
                                  size_t expected_marked_bytes) {
     Heap::From(GetHeap())->object_allocator().ResetLinearAllocationBuffers();
-    MarkingVerifier verifier(heap, CollectionType::kMajor);
-    verifier.Run(stack_state, v8::base::Stack::GetCurrentStackPosition(),
-                 expected_marked_bytes);
+    Heap::From(GetHeap())->stack()->SetMarkerAndCallback(
+        [&heap, stack_state, expected_marked_bytes]() {
+          MarkingVerifier verifier(heap, CollectionType::kMajor);
+          verifier.Run(stack_state, expected_marked_bytes);
+        });
   }
 };
 
@@ -50,6 +52,15 @@ V8_NOINLINE T access(volatile const T& t) {
   return t;
 }
 
+bool MarkHeader(HeapObjectHeader& header) {
+  if (header.TryMarkAtomic()) {
+    BasePage::FromPayload(&header)->IncrementMarkedBytes(
+        header.AllocatedSize());
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // Following tests should not crash.
@@ -57,7 +68,7 @@ V8_NOINLINE T access(volatile const T& t) {
 TEST_F(MarkingVerifierTest, DoesNotDieOnMarkedOnStackReference) {
   GCed* object = MakeGarbageCollected<GCed>(GetAllocationHandle());
   auto& header = HeapObjectHeader::FromObject(object);
-  ASSERT_TRUE(header.TryMarkAtomic());
+  ASSERT_TRUE(MarkHeader(header));
   VerifyMarking(Heap::From(GetHeap())->AsBase(),
                 StackState::kMayContainHeapPointers, header.AllocatedSize());
   access(object);
@@ -66,10 +77,10 @@ TEST_F(MarkingVerifierTest, DoesNotDieOnMarkedOnStackReference) {
 TEST_F(MarkingVerifierTest, DoesNotDieOnMarkedMember) {
   Persistent<GCed> parent = MakeGarbageCollected<GCed>(GetAllocationHandle());
   auto& parent_header = HeapObjectHeader::FromObject(parent.Get());
-  ASSERT_TRUE(parent_header.TryMarkAtomic());
+  ASSERT_TRUE(MarkHeader(parent_header));
   parent->SetChild(MakeGarbageCollected<GCed>(GetAllocationHandle()));
   auto& child_header = HeapObjectHeader::FromObject(parent->child());
-  ASSERT_TRUE(child_header.TryMarkAtomic());
+  ASSERT_TRUE(MarkHeader(child_header));
   VerifyMarking(Heap::From(GetHeap())->AsBase(), StackState::kNoHeapPointers,
                 parent_header.AllocatedSize() + child_header.AllocatedSize());
 }
@@ -77,10 +88,10 @@ TEST_F(MarkingVerifierTest, DoesNotDieOnMarkedMember) {
 TEST_F(MarkingVerifierTest, DoesNotDieOnMarkedWeakMember) {
   Persistent<GCed> parent = MakeGarbageCollected<GCed>(GetAllocationHandle());
   auto& parent_header = HeapObjectHeader::FromObject(parent.Get());
-  ASSERT_TRUE(parent_header.TryMarkAtomic());
+  ASSERT_TRUE(MarkHeader(parent_header));
   parent->SetWeakChild(MakeGarbageCollected<GCed>(GetAllocationHandle()));
   auto& child_header = HeapObjectHeader::FromObject(parent->weak_child());
-  ASSERT_TRUE(child_header.TryMarkAtomic());
+  ASSERT_TRUE(MarkHeader(child_header));
   VerifyMarking(Heap::From(GetHeap())->AsBase(), StackState::kNoHeapPointers,
                 parent_header.AllocatedSize() + child_header.AllocatedSize());
 }
@@ -102,7 +113,7 @@ TEST_F(MarkingVerifierTest, DoesNotDieOnInConstructionOnObject) {
   MakeGarbageCollected<GCedWithCallback>(
       GetAllocationHandle(), [this](GCedWithCallback* obj) {
         auto& header = HeapObjectHeader::FromObject(obj);
-        CHECK(header.TryMarkAtomic());
+        CHECK(MarkHeader(header));
         VerifyMarking(Heap::From(GetHeap())->AsBase(),
                       StackState::kMayContainHeapPointers,
                       header.AllocatedSize());

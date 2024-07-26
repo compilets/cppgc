@@ -12,14 +12,14 @@
 #include "src/heap/cppgc/gc-info-table.h"
 #include "src/heap/cppgc/platform.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
 
 namespace {
 
-constexpr GCInfo GetEmptyGCInfo() { return {nullptr, nullptr, nullptr, false}; }
+constexpr GCInfo GetEmptyGCInfo() { return {nullptr, nullptr, nullptr}; }
 
 class GCInfoTableTest : public ::testing::Test {
  public:

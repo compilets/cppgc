@@ -16,7 +16,7 @@
 #include "include/cppgc/prefinalizer.h"
 #include "src/heap/cppgc/globals.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {

@@ -14,7 +14,7 @@
 #include "src/heap/cppgc/page-memory.h"
 #include "src/heap/cppgc/raw-heap.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
@@ -204,7 +204,7 @@ TEST_F(PageTest, NormalPageCreationDestruction) {
       {page->PayloadStart(), page->PayloadSize()}));
   space->RemovePage(page);
   EXPECT_EQ(space->end(), std::find(space->begin(), space->end(), page));
-  NormalPage::Destroy(page);
+  NormalPage::Destroy(page, FreeMemoryHandling::kDoNotDiscard);
   EXPECT_EQ(nullptr, backend->Lookup(page->PayloadStart()));
 }
 
@@ -236,7 +236,8 @@ TEST_F(PageTest, UnsweptPageDestruction) {
     auto* page = NormalPage::TryCreate(GetPageBackend(), *space);
     EXPECT_NE(nullptr, page);
     space->AddPage(page);
-    EXPECT_DEATH_IF_SUPPORTED(NormalPage::Destroy(page), "");
+    EXPECT_DEATH_IF_SUPPORTED(
+        NormalPage::Destroy(page, FreeMemoryHandling::kDoNotDiscard), "");
   }
   {
     auto* space = static_cast<LargePageSpace*>(

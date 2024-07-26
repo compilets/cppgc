@@ -11,7 +11,7 @@
 #include "src/heap/cppgc/heap.h"
 #include "src/heap/cppgc/trace-event.h"
 #include "test/unittests/heap/cppgc/test-platform.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
@@ -122,6 +122,7 @@ class TestSupportingAllocationOnly : public TestWithHeap {
   TestSupportingAllocationOnly();
 
  private:
+  CPPGC_STACK_ALLOCATED_IGNORE("permitted for test code")
   subtle::NoGarbageCollectionScope no_gc_scope_;
 };
 

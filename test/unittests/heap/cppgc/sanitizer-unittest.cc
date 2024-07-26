@@ -6,7 +6,7 @@
 #include "src/base/macros.h"
 #include "src/base/sanitizer/asan.h"
 #include "test/unittests/heap/cppgc/tests.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(LEAK_SANITIZER)
 #include <sanitizer/lsan_interface.h>

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <atomic>
 #include <vector>
 
@@ -53,8 +54,11 @@ namespace internal {
   V(MarkVisitCrossThreadPersistents)        \
   V(MarkVisitStack)                         \
   V(MarkVisitRememberedSets)                \
+  V(WeakContainerCallbacksProcessing)       \
+  V(CustomCallbacksProcessing)              \
   V(SweepFinishIfOutOfWork)                 \
   V(SweepInvokePreFinalizers)               \
+  V(SweepInIdleTask)                        \
   V(SweepInTask)                            \
   V(SweepInTaskForStatistics)               \
   V(SweepOnAllocation)                      \
@@ -274,7 +278,11 @@ class V8_EXPORT_PRIVATE StatsCollector final {
 
   void NotifySafePointForTesting();
 
-  // Indicates a new garbage collection cycle.
+  // Indicates a new garbage collection cycle. The phase is optional and is only
+  // used for major GC when generational GC is enabled.
+  void NotifyUnmarkingStarted(CollectionType);
+  // Indicates a new minor garbage collection cycle or a major, if generational
+  // GC is not enabled.
   void NotifyMarkingStarted(CollectionType, MarkingType, IsForcedGC);
   // Indicates that marking of the current garbage collection cycle is
   // completed.
@@ -323,6 +331,7 @@ class V8_EXPORT_PRIVATE StatsCollector final {
  private:
   enum class GarbageCollectionState : uint8_t {
     kNotRunning,
+    kUnmarking,
     kMarking,
     kSweeping
   };

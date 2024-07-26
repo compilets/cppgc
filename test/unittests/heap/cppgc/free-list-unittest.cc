@@ -11,7 +11,7 @@
 #include "src/base/bits.h"
 #include "src/heap/cppgc/globals.h"
 #include "src/heap/cppgc/heap-object-header.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cppgc {
 namespace internal {
@@ -145,6 +145,15 @@ TEST(FreeListTest, Append) {
   EXPECT_EQ(0u, list1.Size());
   EXPECT_TRUE(list1.IsEmpty());
 }
+
+#ifdef DEBUG
+TEST(FreeListTest, AppendSelf) {
+  auto blocks = CreateEntries();
+  FreeList list = CreatePopulatedFreeList(blocks);
+  // Appending a free list to itself should fail in debug builds.
+  EXPECT_DEATH_IF_SUPPORTED({ list.Append(std::move(list)); }, "");
+}
+#endif
 
 TEST(FreeListTest, Contains) {
   auto blocks = CreateEntries();
