@@ -43,7 +43,7 @@ core.workflow(
         url=destination_url,
         destination_ref='main',
         update_description=True,
-        pr_branch = 'latest-cppgc'
+        pr_branch='update-latest-cppgc'
     ),
     origin_files=glob(INTERESTING_PATHS,
                       exclude=['samples/cppgc/cppgc-for-v8-embedders.cc']),
