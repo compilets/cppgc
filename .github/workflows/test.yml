@@ -1,0 +1,36 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: >-
+      ${{
+        (matrix.os == 'mac' && matrix.arch == 'arm64') &&
+          'macos-14' ||
+          (fromJson('{"linux":"ubuntu-22.04","mac":"macos-13","win":"windows-2022"}')[matrix.os])
+      }}
+    continue-on-error: false
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [linux, mac, win]
+        arch: [x64]
+        include:
+          - os: mac
+            arch: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          npm i -g unzip-url
+          unzip-url https://github.com/yue/build-gn/releases/download/v0.11.1/gn_v0.11.1_${{ matrix.os }}_${{ matrix.arch }}.zip gn
+          ./gn/gn gen out/Debug --args="is_component=false is_debug=true"
+          ./gn/ninja -C out/Debug cppgc_sample
+
+      - name: Test
+        run: ./out/Debug/cppgc_sample
