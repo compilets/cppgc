@@ -9,6 +9,7 @@ INTERESTING_PATHS = [
     'samples/cppgc/**',
     'src/base/**',
     'src/tracing/trace-event.h',
+    'src/tracing/trace-event-no-perfetto.h',
     'src/libplatform/**',
     'src/heap/base/**',
     'src/heap/cppgc/**',
@@ -16,16 +17,15 @@ INTERESTING_PATHS = [
     'include/libplatform/**',
     'include/v8config.h',
     'include/v8-platform.h',
+    'include/v8-source-location.h',
     'testing/**',
     'test/unittests/heap/cppgc/**',
 ]
 
 GITHUB_ONLY_PATHS = [
     '.gitignore',
-    'BUILD.bazel',
-    'WORKSPACE',
-    '.bazelrc',
-    'repositories.bzl',
+    '.gn',
+    'BUILD.gn',
     '.github/**',
 ]
 
