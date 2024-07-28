@@ -11,10 +11,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Linux
+          - name: linux
             os: ubuntu-latest
             mode: opt
-          - name: MacOS
+          - name: mac
             os: macos-latest
             mode: opt
           # TODO: Enable windows support
@@ -25,4 +25,3 @@ jobs:
     - name: Test with Bazel
       run: |
         bazel test --compilation_mode=${{ matrix.mode }} ...:all --test_output=errors
-

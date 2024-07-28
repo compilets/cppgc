@@ -30,7 +30,7 @@ GITHUB_ONLY_PATHS = [
 ]
 
 origin_url = 'https://chromium.googlesource.com/v8/v8.git'
-destination_url = 'https://github.com/oilpan-gc/cppgc.git'
+destination_url = 'https://github.com/compilets/cppgc.git'
 
 # This workflow syncs cppgc source inside V8's googlesource repo with GitHub.
 core.workflow(
@@ -43,7 +43,7 @@ core.workflow(
         url=destination_url,
         destination_ref='main',
         update_description=True,
-        pr_branch = 'latest_v8_export'
+        pr_branch = 'latest-cppgc'
     ),
     origin_files=glob(INTERESTING_PATHS,
                       exclude=['samples/cppgc/cppgc-for-v8-embedders.cc']),
@@ -52,31 +52,6 @@ core.workflow(
     authoring=authoring.pass_thru('V8 Team <v8-dev@googlegroups.com>'),
     transformations=[
         core.copy(before = "include/cppgc/README.md", after = "README.md"),
-        core.replace(
-            before = '#include "testing/gtest/include/gtest/gtest_prod.h"  // nogncheck',
-            after = '#include <gtest/gtest_prod.h>',
-            paths = glob(["src/**/*.cc", "src/**/*.h"]),
-        ),
-        core.replace(
-            before = '#include "testing/gtest/include/gtest/gtest.h"',
-            after = '#include <gtest/gtest.h>',
-            paths = glob(["test/**/*.cc", "test/**/*.h"]),
-        ),
-        core.replace(
-            before = '#include "testing/gmock/include/gmock/gmock.h"',
-            after = '#include <gmock/gmock.h>',
-            paths = glob(["test/**/*.cc", "test/**/*.h"]),
-        ),
-        core.replace(
-            before = '#include "testing/gmock/include/gmock/gmock-matchers.h"',
-            after = '#include <gmock/gmock-matchers.h>',
-            paths = glob(["test/**/*.cc", "test/**/*.h"]),
-        ),
-        core.replace(
-            before = '#include "base/trace_event/common/trace_event_common.h"',
-            after = '#include "src/base/chromium/trace_event_common.h"',
-            paths = glob(["src/**/*.cc", "src/**/*.h"]),
-        ),
         metadata.squash_notes(prefix='Export of V8 changes from ' +
                               origin_url + '\n\nList of included changes:\n\n')
     ]
