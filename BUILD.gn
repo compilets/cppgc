@@ -309,8 +309,8 @@ source_set("v8_base") {
   }
   if (is_linux) {
     sources += [
-      "src/base/platform/platform-linux.h",
       "src/base/platform/platform-linux.cc",
+      "src/base/platform/platform-linux.h",
     ]
   } else if (is_mac) {
     sources += [
@@ -318,6 +318,7 @@ source_set("v8_base") {
     ]
   } else if (is_win) {
     sources += [
+      "src/base/debug/stack_trace_win.cc",
       "src/base/platform/platform-win32.cc",
       "src/base/platform/platform-win32.h",
     ]
