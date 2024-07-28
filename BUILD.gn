@@ -323,14 +323,41 @@ source_set("v8_base") {
     ]
   }
 
-  if (current_cpu == "arm64") {
-    sources += [
-      "src/heap/base/asm/arm64/push_registers_asm.cc",
-    ]
-  } else if (current_cpu == "x64") {
-    sources += [
-      "src/heap/base/asm/x64/push_registers_asm.cc",
-    ]
+  if (is_clang || !is_win) {
+    if (current_cpu == "x64") {
+      if (is_win) {
+        # Prefer a masm version with unwind directives.
+        sources += [ "src/heap/base/asm/x64/push_registers_masm.asm" ]
+      } else {
+        sources += [ "src/heap/base/asm/x64/push_registers_asm.cc" ]
+      }
+    } else if (current_cpu == "x86") {
+      sources += [ "src/heap/base/asm/ia32/push_registers_asm.cc" ]
+    } else if (current_cpu == "arm") {
+      sources += [ "src/heap/base/asm/arm/push_registers_asm.cc" ]
+    } else if (current_cpu == "arm64") {
+      sources += [ "src/heap/base/asm/arm64/push_registers_asm.cc" ]
+    } else if (current_cpu == "ppc64") {
+      sources += [ "src/heap/base/asm/ppc/push_registers_asm.cc" ]
+    } else if (current_os == "zos") {
+      sources += [ "src/heap/base/asm/zos/push_registers_asm.cc" ]
+    } else if (current_cpu == "s390x") {
+      sources += [ "src/heap/base/asm/s390/push_registers_asm.cc" ]
+    } else if (current_cpu == "mips64el") {
+      sources += [ "src/heap/base/asm/mips64/push_registers_asm.cc" ]
+    } else if (current_cpu == "loong64") {
+      sources += [ "src/heap/base/asm/loong64/push_registers_asm.cc" ]
+    } else if (current_cpu == "riscv64" || current_cpu == "riscv32") {
+      sources += [ "src/heap/base/asm/riscv/push_registers_asm.cc" ]
+    }
+  } else if (is_win) {
+    if (current_cpu == "x64") {
+      sources += [ "src/heap/base/asm/x64/push_registers_masm.asm" ]
+    } else if (current_cpu == "x86") {
+      sources += [ "src/heap/base/asm/ia32/push_registers_masm.asm" ]
+    } else if (current_cpu == "arm64") {
+      sources += [ "src/heap/base/asm/arm64/push_registers_masm.S" ]
+    }
   }
 }
 
@@ -338,4 +365,70 @@ executable("cppgc_sample") {
   deps = [ ":cppgc" ]
   include_dirs = [ "." ]
   sources = [ "samples/cppgc/hello-world.cc" ]
+}
+
+executable("cppgc_unittests") {
+  testonly = true
+  deps = [
+    ":cppgc",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "test/unittests/heap/cppgc/run-all-unittests.cc",
+    "test/unittests/heap/cppgc/allocation-unittest.cc",
+    "test/unittests/heap/cppgc/caged-heap-unittest.cc",
+    "test/unittests/heap/cppgc/compactor-unittest.cc",
+    "test/unittests/heap/cppgc/concurrent-marking-unittest.cc",
+    "test/unittests/heap/cppgc/concurrent-sweeper-unittest.cc",
+    "test/unittests/heap/cppgc/cross-thread-persistent-unittest.cc",
+    "test/unittests/heap/cppgc/custom-spaces-unittest.cc",
+    "test/unittests/heap/cppgc/ephemeron-pair-unittest.cc",
+    "test/unittests/heap/cppgc/explicit-management-unittest.cc",
+    "test/unittests/heap/cppgc/finalizer-trait-unittest.cc",
+    "test/unittests/heap/cppgc/free-list-unittest.cc",
+    "test/unittests/heap/cppgc/garbage-collected-unittest.cc",
+    "test/unittests/heap/cppgc/gc-info-unittest.cc",
+    "test/unittests/heap/cppgc/gc-invoker-unittest.cc",
+    "test/unittests/heap/cppgc/heap-growing-unittest.cc",
+    "test/unittests/heap/cppgc/heap-object-header-unittest.cc",
+    "test/unittests/heap/cppgc/heap-page-unittest.cc",
+    "test/unittests/heap/cppgc/heap-registry-unittest.cc",
+    "test/unittests/heap/cppgc/heap-statistics-collector-unittest.cc",
+    "test/unittests/heap/cppgc/heap-unittest.cc",
+    "test/unittests/heap/cppgc/liveness-broker-unittest.cc",
+    "test/unittests/heap/cppgc/logging-unittest.cc",
+    "test/unittests/heap/cppgc/marker-unittest.cc",
+    "test/unittests/heap/cppgc/marking-verifier-unittest.cc",
+    "test/unittests/heap/cppgc/marking-visitor-unittest.cc",
+    "test/unittests/heap/cppgc/member-unittest.cc",
+    "test/unittests/heap/cppgc/metric-recorder-unittest.cc",
+    "test/unittests/heap/cppgc/minor-gc-unittest.cc",
+    "test/unittests/heap/cppgc/name-trait-unittest.cc",
+    "test/unittests/heap/cppgc/object-size-trait-unittest.cc",
+    "test/unittests/heap/cppgc/object-start-bitmap-unittest.cc",
+    "test/unittests/heap/cppgc/page-memory-unittest.cc",
+    "test/unittests/heap/cppgc/persistent-family-unittest.cc",
+    "test/unittests/heap/cppgc/platform-unittest.cc",
+    "test/unittests/heap/cppgc/prefinalizer-unittest.cc",
+    "test/unittests/heap/cppgc/sanitizer-unittest.cc",
+    "test/unittests/heap/cppgc/stack-unittest.cc",
+    "test/unittests/heap/cppgc/stats-collector-scopes-unittest.cc",
+    "test/unittests/heap/cppgc/stats-collector-unittest.cc",
+    "test/unittests/heap/cppgc/sweeper-unittest.cc",
+    "test/unittests/heap/cppgc/test-platform.cc",
+    "test/unittests/heap/cppgc/test-platform.h",
+    "test/unittests/heap/cppgc/testing-unittest.cc",
+    "test/unittests/heap/cppgc/tests.cc",
+    "test/unittests/heap/cppgc/tests.h",
+    "test/unittests/heap/cppgc/visitor-unittest.cc",
+    "test/unittests/heap/cppgc/weak-container-unittest.cc",
+    "test/unittests/heap/cppgc/workloads-unittest.cc",
+    "test/unittests/heap/cppgc/write-barrier-unittest.cc",
+  ]
+
+  if (cppgc_enable_caged_heap) {
+    sources += [ "test/unittests/heap/cppgc/age-table-unittest.cc" ]
+  }
 }
