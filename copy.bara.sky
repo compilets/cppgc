@@ -23,10 +23,11 @@ INTERESTING_PATHS = [
 ]
 
 GITHUB_ONLY_PATHS = [
+    '.github/**',
     '.gitignore',
     '.gn',
     'BUILD.gn',
-    '.github/**',
+    'copy.bara.sky',
 ]
 
 origin_url = 'https://chromium.googlesource.com/v8/v8.git'
@@ -39,11 +40,10 @@ core.workflow(
         url=origin_url,
         ref='main',
     ),
-    destination=git.github_pr_destination(
+    destination=git.destination(
         url=destination_url,
-        destination_ref='main',
-        update_description=True,
-        pr_branch='update-latest-cppgc'
+        fetch='main',
+        push='update-latest-cppgc',
     ),
     origin_files=glob(INTERESTING_PATHS,
                       exclude=['samples/cppgc/cppgc-for-v8-embedders.cc']),

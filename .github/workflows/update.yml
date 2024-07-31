@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +24,11 @@ jobs:
           curl -SLO https://github.com/oilpan-gc/export-automation/releases/download/copybara/copybara_deploy.jar
           # Use github credentials for pushing.
           gh auth setup-git
-          # Setup the github token for creating PR.
-          echo "https://x-access-token:${GITHUB_TOKEN}@api.github.com" > ~/.git-credentials
+          git config --global user.name 'Cheng'
+          git config --global user.email 'cheng@zcbenz.com'
           # Run copybara.
           java -jar ./copybara_deploy.jar copy.bara.sky
+          # Create PR.
+          gh pr create --base main --head update-latest-cppgc \
+                       --title 'Update to latest V8 changes' \
+                       --body '__:warning: Close and reopen PR to run CI :warning:__'
