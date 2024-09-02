@@ -18,12 +18,20 @@ config("oilpan_config") {
       "CPPGC_POINTER_COMPRESSION",
     ]
   }
+
+  if (!is_clang && is_win) {
+    cflags_cc = [ "/wd4715" ]
+  }
 }
 
 config("oilpan_internal_config") {
   include_dirs = [ "." ]
-  if (is_posix && !is_clang) {
-    cflags_cc = [ "-Wno-return-type" ]
+  if (!is_clang) {
+    if (is_posix) {
+      cflags_cc = [ "-Wno-return-type" ]
+    } else if (is_win) {
+      cflags_cc = [ "/wd4715" ]
+    }
   }
 }
 
@@ -438,5 +446,9 @@ executable("cppgc_unittests") {
 
   if (cppgc_enable_caged_heap) {
     sources += [ "test/unittests/heap/cppgc/age-table-unittest.cc" ]
+  }
+
+  if (!is_clang && is_win) {
+    cflags_cc = [ "/wd4267" ]
   }
 }
