@@ -20,10 +20,17 @@ config("oilpan_config") {
   }
 }
 
+config("oilpan_internal_config") {
+  include_dirs = [ "." ]
+  if (is_posix && !is_clang) {
+    cflags_cc = [ "-Wno-return-type" ]
+  }
+}
+
 source_set("cppgc") {
   public_configs = [ ":oilpan_config" ]
+  configs += [ ":oilpan_internal_config" ]
   deps = [ ":v8_base" ]
-  include_dirs = [ "." ]
 
   sources = [
     "src/heap/base/active-system-pages.cc",
@@ -167,7 +174,7 @@ source_set("cppgc") {
 }
 
 source_set("v8_base") {
-  include_dirs = [ "." ]
+  configs += [ ":oilpan_internal_config" ]
 
   sources = [
     "src/base/abort-mode.cc",

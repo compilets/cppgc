@@ -35,8 +35,7 @@ jobs:
         run: |
           npm i -g unzip-url
           unzip-url https://github.com/yue/build-gn/releases/download/v0.11.1/gn_v0.11.1_${{ matrix.os }}_${{ matrix.arch }}.zip gn
-          python gn/tools/clang/scripts/update.py
-          ./gn/gn gen out/Debug --args='is_debug=true cc_wrapper="ccache" clang_use_chrome_plugins=false'
+          ./gn/gn gen out/Debug --args='is_debug=true cc_wrapper="ccache"'
           ./gn/ninja -C out/Debug cppgc_sample cppgc_unittests
 
       - name: Test
