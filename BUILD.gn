@@ -11,6 +11,10 @@ config("oilpan_config") {
     "CPPGC_IS_STANDALONE",
   ]
 
+  if (is_debug) {
+    defines += [ "CPPGC_ENABLE_API_CHECKS" ]
+  }
+
   if (cppgc_enable_caged_heap) {
     defines += [
       "CPPGC_CAGED_HEAP",
