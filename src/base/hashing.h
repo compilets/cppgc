@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8_BASE_FUNCTIONAL_H_
-#define V8_BASE_FUNCTIONAL_H_
+#ifndef V8_BASE_HASHING_H_
+#define V8_BASE_HASHING_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -266,29 +266,32 @@ V8_INLINE size_t hash_value(std::tuple<T...> const& v) {
   return hash_value_impl(v, std::make_index_sequence<sizeof...(T)>());
 }
 
-template <typename T, typename = std::enable_if_t<std::is_enum<T>::value>>
-V8_INLINE size_t hash_value(T v) {
+template <typename T>
+V8_INLINE size_t hash_value(T v)
+  requires std::is_enum<T>::value
+{
   return hash_value(static_cast<std::underlying_type_t<T>>(v));
 }
 
 // Provide a hash_value function for each T with a hash_value member function.
 template <typename T>
-V8_INLINE auto hash_value(const T& v) -> decltype(v.hash_value()) {
+  requires requires(const T& t) {
+    { t.hash_value() } -> std::convertible_to<size_t>;
+  }
+V8_INLINE size_t hash_value(const T& v) {
   return v.hash_value();
 }
 
-// Define base::hash to call the hash_value function or member function.
 template <typename T>
-struct hash {
-  V8_INLINE constexpr size_t operator()(const T& v) const {
-    return hash_value(v);
-  }
+concept Hashable = requires(const T& t) {
+  { hash_value(t) } -> std::convertible_to<size_t>;
 };
 
-template <typename T>
-struct hash<T*> {
-  V8_INLINE size_t operator()(T* const v) const {
-    return ::v8::base::hash_value(v);
+// Define base::hash to call the hash_value function.
+template <Hashable T>
+struct hash<T> {
+  V8_INLINE constexpr size_t operator()(const T& v) const {
+    return hash_value(v);
   }
 };
 
@@ -357,4 +360,12 @@ V8_BASE_BIT_SPECIALIZE_BIT_CAST(double, uint64_t)
 
 }  // namespace v8::base
 
-#endif  // V8_BASE_FUNCTIONAL_H_
+// Also define std::hash for all classes that can be hashed via v8::base::hash.
+namespace std {
+template <typename T>
+  requires requires { typename v8::base::hash<T>; }
+struct hash<T> : v8::base::hash<T> {};
+
+}  // namespace std
+
+#endif  // V8_BASE_HASHING_H_
